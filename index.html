@@ -1,1 +1,1887 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fruit Cannon Shooter</title>
 
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.game {
+    width: 900px;
+    max-width: 96%;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 25px black;
+}
+
+/* ================= HEADER ================= */
+
+.header {
+    background: #4caf50;
+    color: white;
+    padding: 14px;
+    display: flex;
+    justify-content: space-around;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+/* ================= ARENA ================= */
+
+#gameArea {
+    position: relative;
+    height: 600px;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #71cdf5 0%,
+            #c9f0ff 72%,
+            #70b84b 72%,
+            #4caf50 100%
+        );
+}
+
+.sun {
+    position: absolute;
+    top: 15px;
+    right: 30px;
+    font-size: 60px;
+}
+
+.cloud {
+    position: absolute;
+    font-size: 55px;
+    opacity: .8;
+}
+
+.cloud1 {
+    left: 60px;
+    top: 35px;
+}
+
+.cloud2 {
+    left: 400px;
+    top: 70px;
+}
+
+/* ================= BUAH ================= */
+
+.fruit {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 36px;
+    z-index: 4;
+
+    user-select: none;
+}
+
+.fruit.pop {
+    animation: pop .25s forwards;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+.fruit.drop {
+    animation: drop .7s forwards;
+}
+
+@keyframes drop {
+    0% {
+        transform: translateY(0) rotate(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(450px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* ================= GARIS BIDIK ================= */
+
+#aimLine {
+    position: absolute;
+    height: 3px;
+    background: rgba(255,255,255,.65);
+
+    transform-origin: left center;
+
+    pointer-events: none;
+
+    z-index: 3;
+
+    display: none;
+}
+
+/* ================= MERIAM ================= */
+
+#cannon {
+    position: absolute;
+
+    left: 50%;
+    bottom: 15px;
+
+    width: 100px;
+    height: 100px;
+
+    transform: translateX(-50%);
+
+    z-index: 10;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 75px;
+
+    user-select: none;
+}
+
+/* laras meriam */
+
+#barrel {
+    position: absolute;
+
+    width: 75px;
+    height: 25px;
+
+    background: #555;
+
+    border: 4px solid #222;
+
+    border-radius: 12px;
+
+    transform-origin: 15px 50%;
+
+    z-index: -1;
+}
+
+/* ================= PELURU ================= */
+
+.bullet {
+    position: absolute;
+
+    width: 45px;
+    height: 45px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 31px;
+
+    z-index: 8;
+
+    pointer-events: none;
+}
+
+/* ================= PESAN ================= */
+
+#message {
+    position: absolute;
+
+    top: 45%;
+    left: 0;
+
+    width: 100%;
+
+    text-align: center;
+
+    color: white;
+
+    font-size: 40px;
+    font-weight: bold;
+
+    text-shadow: 2px 2px 5px black;
+
+    display: none;
+
+    z-index: 30;
+}
+
+/* ================= AMUNISI ================= */
+
+.ammoBox {
+    background: #eeeeee;
+
+    padding: 12px;
+
+    text-align: center;
+}
+
+.ammoTitle {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.ammo {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.ammoItem {
+    width: 65px;
+    height: 65px;
+
+    border: 3px solid #bbb;
+    border-radius: 10px;
+
+    background: white;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 38px;
+}
+
+.ammoItem.active {
+    border-color: #4caf50;
+    box-shadow: 0 0 10px #4caf50;
+}
+
+/* ================= TOMBOL ================= */
+
+.controls {
+    background: #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+button {
+    border: none;
+    border-radius: 8px;
+
+    padding: 11px 22px;
+
+    margin: 4px;
+
+    background: #4caf50;
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: #388e3c;
+}
+
+.swap {
+    background: #ff9800;
+}
+
+.swap:hover {
+    background: #ef6c00;
+}
+
+.info {
+    text-align: center;
+    padding: 8px;
+    color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div>🎯 Skor: <span id="score">0</span></div>
+        <div>❤️ Nyawa: <span id="lives">3</span></div>
+        <div>⭐ Level: <span id="level">1</span></div>
+    </div>
+
+    <!-- ARENA -->
+    <div id="gameArea">
+
+        <div class="sun">☀️</div>
+
+        <div class="cloud cloud1">☁️</div>
+        <div class="cloud cloud2">☁️</div>
+
+        <div id="aimLine"></div>
+
+        <div id="message">GAME OVER</div>
+
+        <!-- MERIAM TETAP -->
+        <div id="cannon">
+            🏰
+            <div id="barrel"></div>
+        </div>
+
+    </div>
+
+    <!-- AMUNISI -->
+    <div class="ammoBox">
+
+        <div class="ammoTitle">
+            AMUNISI
+        </div>
+
+        <div class="ammo">
+
+            <div id="ammo0" class="ammoItem active">
+                🍎
+            </div>
+
+            <div id="ammo1" class="ammoItem">
+                🍊
+            </div>
+
+            <div id="ammo2" class="ammoItem">
+                🍇
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TOMBOL -->
+    <div class="controls">
+
+        <button onclick="mulaiGame()">
+            ▶ MULAI
+        </button>
+
+        <button onclick="tembak()">
+            🎯 TEMBAK
+        </button>
+
+        <button class="swap" onclick="tukarAmunisi()">
+            🔄 TUKAR
+        </button>
+
+    </div>
+
+    <div class="info">
+        Gerakkan mouse untuk membidik • Klik untuk menembak •
+        Tekan SPASI untuk menembak
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   ELEMENT
+========================================= */
+
+const area =
+document.getElementById("gameArea");
+
+const cannon =
+document.getElementById("cannon");
+
+const barrel =
+document.getElementById("barrel");
+
+const aimLine =
+document.getElementById("aimLine");
+
+
+/* =========================================
+   DATA GAME
+========================================= */
+
+let score = 0;
+let lives = 3;
+let level = 1;
+
+let gameStarted = false;
+
+let fruits = [];
+
+let bullet = null;
+
+
+/* =========================================
+   ARAH MERIAM
+========================================= */
+
+let aimAngle = 0;
+
+
+/* =========================================
+   AMUNISI
+========================================= */
+
+const fruitTypes = [
+    "🍎",
+    "🍊",
+    "🍇",
+    "🍓",
+    "🍉"
+];
+
+let ammo = [
+    "🍎",
+    "🍊",
+    "🍇"
+];
+
+
+/* =========================================
+   GRID
+========================================= */
+
+const ukuran = 52;
+
+const kolom = 16;
+
+const baris = 8;
+
+let grid = [];
+
+
+/* =========================================
+   MULAI GAME
+========================================= */
+
+function mulaiGame() {
+
+    score = 0;
+
+    lives = 3;
+
+    level = 1;
+
+    gameStarted = true;
+
+    bullet = null;
+
+    fruits.forEach(function(f) {
+        f.element.remove();
+    });
+
+    fruits = [];
+
+    grid = [];
+
+    for (
+        let y = 0;
+        y < baris;
+        y++
+    ) {
+
+        grid[y] = [];
+
+        for (
+            let x = 0;
+            x < kolom;
+            x++
+        ) {
+
+            grid[y][x] = null;
+
+        }
+    }
+
+
+    /* Buah tersusun di atas */
+
+    for (
+        let y = 0;
+        y < 5;
+        y++
+    ) {
+
+        for (
+            let x = 0;
+            x < kolom;
+            x++
+        ) {
+
+            let jenis =
+                fruitTypes[
+                    (x + y * 2) %
+                    fruitTypes.length
+                ];
+
+            tambahBuah(
+                x,
+                y,
+                jenis
+            );
+
+        }
+    }
+
+
+    /* Buat beberapa kelompok
+       buah yang sama */
+
+    buatKelompok(
+        3,
+        1,
+        "🍎"
+    );
+
+    buatKelompok(
+        8,
+        2,
+        "🍊"
+    );
+
+    buatKelompok(
+        12,
+        3,
+        "🍇"
+    );
+
+
+    ammo = [
+        randomBuah(),
+        randomBuah(),
+        randomBuah()
+    ];
+
+
+    updateAmmo();
+
+    updateInfo();
+
+
+    document.getElementById(
+        "message"
+    ).style.display = "none";
+
+
+    requestAnimationFrame(loop);
+}
+
+
+/* =========================================
+   KELOMPOK BUAH
+========================================= */
+
+function buatKelompok(
+    x,
+    y,
+    type
+) {
+
+    for (
+        let i = 0;
+        i < 3;
+        i++
+    ) {
+
+        if (
+            x + i < kolom
+        ) {
+
+            if (
+                grid[y][x + i]
+            ) {
+
+                hapusBuah(
+                    grid[y][x + i]
+                );
+
+            }
+
+            tambahBuah(
+                x + i,
+                y,
+                type
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================
+   RANDOM BUAH
+========================================= */
+
+function randomBuah() {
+
+    return fruitTypes[
+        Math.floor(
+            Math.random() *
+            fruitTypes.length
+        )
+    ];
+
+}
+
+
+/* =========================================
+   TAMBAH BUAH
+========================================= */
+
+function tambahBuah(
+    gx,
+    gy,
+    type
+) {
+
+    if (
+        gx < 0 ||
+        gx >= kolom ||
+        gy < 0 ||
+        gy >= baris
+    ) {
+        return;
+    }
+
+    if (
+        grid[gy][gx] !== null
+    ) {
+        return;
+    }
+
+
+    const element =
+        document.createElement("div");
+
+    element.className =
+        "fruit";
+
+    element.textContent =
+        type;
+
+
+    const pos =
+        posisiGrid(
+            gx,
+            gy
+        );
+
+
+    element.style.left =
+        pos.x + "px";
+
+    element.style.top =
+        pos.y + "px";
+
+
+    area.appendChild(element);
+
+
+    const data = {
+
+        gx: gx,
+
+        gy: gy,
+
+        type: type,
+
+        element: element,
+
+        falling: false
+
+    };
+
+
+    grid[gy][gx] =
+        data;
+
+    fruits.push(data);
+
+}
+
+
+/* =========================================
+   POSISI BUAH
+========================================= */
+
+function posisiGrid(
+    gx,
+    gy
+) {
+
+    let offset =
+        gy % 2 === 0
+        ? 0
+        : ukuran / 2;
+
+
+    return {
+
+        x:
+            gx * ukuran +
+            offset +
+            5,
+
+        y:
+            gy * ukuran +
+            25
+
+    };
+
+}
+
+
+/* =========================================
+   MOUSE UNTUK MEMBIDIK
+========================================= */
+
+area.addEventListener(
+    "mousemove",
+    function(e) {
+
+        if (!gameStarted) {
+            return;
+        }
+
+
+        const rect =
+            area.getBoundingClientRect();
+
+
+        const cannonX =
+            cannon.offsetLeft +
+            cannon.offsetWidth / 2;
+
+
+        const cannonY =
+            cannon.offsetTop +
+            cannon.offsetHeight / 2;
+
+
+        const mouseX =
+            e.clientX -
+            rect.left;
+
+
+        const mouseY =
+            e.clientY -
+            rect.top;
+
+
+        /*
+           Hitung sudut mouse
+        */
+
+        let dx =
+            mouseX - cannonX;
+
+        let dy =
+            mouseY - cannonY;
+
+
+        aimAngle =
+            Math.atan2(
+                dy,
+                dx
+            ) *
+            180 / Math.PI;
+
+
+        /*
+           Batasi supaya
+           meriam tidak membidik
+           ke bawah
+        */
+
+        if (
+            aimAngle > 0
+        ) {
+
+            aimAngle = 0;
+
+        }
+
+
+        if (
+            aimAngle < -180
+        ) {
+
+            aimAngle = -180;
+
+        }
+
+
+        /*
+           Putar laras
+        */
+
+        barrel.style.transform =
+            "rotate(" +
+            aimAngle +
+            "deg)";
+
+
+        /*
+           Garis bidik
+        */
+
+        aimLine.style.display =
+            "block";
+
+
+        const panjang = 500;
+
+
+        aimLine.style.width =
+            panjang + "px";
+
+
+        aimLine.style.left =
+            cannonX + "px";
+
+
+        aimLine.style.top =
+            cannonY + "px";
+
+
+        aimLine.style.transform =
+            "rotate(" +
+            aimAngle +
+            "deg)";
+
+    }
+);
+
+
+/* =========================================
+   KLIK UNTUK TEMBAK
+========================================= */
+
+area.addEventListener(
+    "click",
+    function(e) {
+
+        if (!gameStarted) {
+            return;
+        }
+
+        tembak();
+
+    }
+);
+
+
+/* =========================================
+   TEMBAK
+========================================= */
+
+function tembak() {
+
+    if (!gameStarted) {
+        return;
+    }
+
+
+    if (bullet !== null) {
+        return;
+    }
+
+
+    const cannonX =
+        cannon.offsetLeft +
+        cannon.offsetWidth / 2;
+
+
+    const cannonY =
+        cannon.offsetTop +
+        cannon.offsetHeight / 2;
+
+
+    const rad =
+        aimAngle *
+        Math.PI / 180;
+
+
+    const speed = 9;
+
+
+    const element =
+        document.createElement("div");
+
+    element.className =
+        "bullet";
+
+    element.textContent =
+        ammo[0];
+
+
+    element.style.left =
+        (cannonX - 22) + "px";
+
+
+    element.style.top =
+        (cannonY - 22) + "px";
+
+
+    area.appendChild(element);
+
+
+    bullet = {
+
+        element: element,
+
+        x: cannonX,
+
+        y: cannonY,
+
+        type: ammo[0],
+
+        dx:
+            Math.cos(rad) *
+            speed,
+
+        dy:
+            Math.sin(rad) *
+            speed
+
+    };
+
+
+    /*
+       Amunisi pertama
+       dikeluarkan
+    */
+
+    ammo.shift();
+
+    ammo.push(
+        randomBuah()
+    );
+
+
+    updateAmmo();
+
+}
+
+
+/* =========================================
+   LOOP
+========================================= */
+
+function loop() {
+
+    if (!gameStarted) {
+        return;
+    }
+
+
+    gerakkanPeluru();
+
+    requestAnimationFrame(loop);
+
+}
+
+
+/* =========================================
+   PELURU BERGERAK
+========================================= */
+
+function gerakkanPeluru() {
+
+    if (
+        bullet === null
+    ) {
+        return;
+    }
+
+
+    bullet.x +=
+        bullet.dx;
+
+
+    bullet.y +=
+        bullet.dy;
+
+
+    /*
+       Pantulkan dari dinding
+    */
+
+    if (
+        bullet.x < 20 ||
+        bullet.x >
+        area.clientWidth - 20
+    ) {
+
+        bullet.dx *= -1;
+
+    }
+
+
+    bullet.element.style.left =
+        (bullet.x - 22) + "px";
+
+
+    bullet.element.style.top =
+        (bullet.y - 22) + "px";
+
+
+    /*
+       Tabrakan buah
+    */
+
+    cekTabrakan();
+
+
+    /*
+       Jika sampai atas
+    */
+
+    if (
+        bullet !== null &&
+        bullet.y < 20
+    ) {
+
+        pasangDiAtas();
+
+    }
+
+}
+
+
+/* =========================================
+   CEK TABRAKAN
+========================================= */
+
+function cekTabrakan() {
+
+    if (
+        bullet === null
+    ) {
+        return;
+    }
+
+
+    for (
+        let i = 0;
+        i < fruits.length;
+        i++
+    ) {
+
+        const f =
+            fruits[i];
+
+
+        if (
+            f.falling
+        ) {
+            continue;
+        }
+
+
+        const pos =
+            posisiGrid(
+                f.gx,
+                f.gy
+            );
+
+
+        const fx =
+            pos.x + 26;
+
+        const fy =
+            pos.y + 26;
+
+
+        const jarak =
+            Math.hypot(
+                bullet.x - fx,
+                bullet.y - fy
+            );
+
+
+        if (
+            jarak < 43
+        ) {
+
+            pasangDekat(f);
+
+            return;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================
+   PASANG DI DEKAT BUAH
+========================================= */
+
+function pasangDekat(target) {
+
+    const arah = [
+
+        [1,0],
+        [-1,0],
+        [0,1],
+        [0,-1],
+
+        [1,1],
+        [-1,-1],
+        [1,-1],
+        [-1,1]
+
+    ];
+
+
+    let tempat = null;
+
+
+    for (
+        let i = 0;
+        i < arah.length;
+        i++
+    ) {
+
+        const gx =
+            target.gx +
+            arah[i][0];
+
+
+        const gy =
+            target.gy +
+            arah[i][1];
+
+
+        if (
+            gy >= 0 &&
+            gy < baris &&
+            gx >= 0 &&
+            gx < kolom &&
+            grid[gy][gx] === null
+        ) {
+
+            tempat = {
+                gx: gx,
+                gy: gy
+            };
+
+            break;
+
+        }
+
+    }
+
+
+    if (
+        tempat === null
+    ) {
+
+        hapusPeluru();
+
+        return;
+
+    }
+
+
+    tambahBuah(
+        tempat.gx,
+        tempat.gy,
+        bullet.type
+    );
+
+
+    hapusPeluru();
+
+
+    const baru =
+        grid[
+            tempat.gy
+        ][
+            tempat.gx
+        ];
+
+
+    /*
+       Cari buah sejenis
+    */
+
+    const kelompok =
+        cariKelompok(
+            baru
+        );
+
+
+    /*
+       Kalau 3 atau lebih
+    */
+
+    if (
+        kelompok.length >= 3
+    ) {
+
+        pecahkan(
+            kelompok
+        );
+
+    }
+
+
+    setTimeout(
+        cekBuahMenggantung,
+        300
+    );
+
+}
+
+
+/* =========================================
+   PASANG DI ATAS
+========================================= */
+
+function pasangDiAtas() {
+
+    if (
+        bullet === null
+    ) {
+        return;
+    }
+
+
+    for (
+        let x = 0;
+        x < kolom;
+        x++
+    ) {
+
+        if (
+            grid[0][x] === null
+        ) {
+
+            tambahBuah(
+                x,
+                0,
+                bullet.type
+            );
+
+            hapusPeluru();
+
+
+            const baru =
+                grid[0][x];
+
+
+            const kelompok =
+                cariKelompok(
+                    baru
+                );
+
+
+            if (
+                kelompok.length >= 3
+            ) {
+
+                pecahkan(
+                    kelompok
+                );
+
+            }
+
+
+            setTimeout(
+                cekBuahMenggantung,
+                300
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    hapusPeluru();
+
+}
+
+
+/* =========================================
+   CARI KELOMPOK SEJENIS
+========================================= */
+
+function cariKelompok(start) {
+
+    const hasil = [];
+
+    const queue = [start];
+
+    const visited =
+        new Set();
+
+
+    function key(f) {
+
+        return f.gx + "," + f.gy;
+
+    }
+
+
+    visited.add(
+        key(start)
+    );
+
+
+    while (
+        queue.length > 0
+    ) {
+
+        const current =
+            queue.shift();
+
+
+        hasil.push(
+            current
+        );
+
+
+        const arah = [
+
+            [1,0],
+            [-1,0],
+            [0,1],
+            [0,-1],
+
+            [1,1],
+            [-1,-1],
+            [1,-1],
+            [-1,1]
+
+        ];
+
+
+        arah.forEach(
+            function(a) {
+
+                const nx =
+                    current.gx +
+                    a[0];
+
+
+                const ny =
+                    current.gy +
+                    a[1];
+
+
+                if (
+                    nx < 0 ||
+                    nx >= kolom ||
+                    ny < 0 ||
+                    ny >= baris
+                ) {
+                    return;
+                }
+
+
+                const tetangga =
+                    grid[ny][nx];
+
+
+                if (
+                    tetangga &&
+                    tetangga.type ===
+                    start.type
+                ) {
+
+                    const k =
+                        key(tetangga);
+
+
+                    if (
+                        !visited.has(k)
+                    ) {
+
+                        visited.add(k);
+
+                        queue.push(
+                            tetangga
+                        );
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+
+
+    return hasil;
+
+}
+
+
+/* =========================================
+   PECAHKAN BUAH
+========================================= */
+
+function pecahkan(
+    kelompok
+) {
+
+    kelompok.forEach(
+        function(f) {
+
+            f.element
+                .classList
+                .add("pop");
+
+        }
+    );
+
+
+    score +=
+        kelompok.length * 10;
+
+
+    level =
+        Math.floor(
+            score / 100
+        ) + 1;
+
+
+    updateInfo();
+
+
+    setTimeout(
+        function() {
+
+            kelompok.forEach(
+                function(f) {
+
+                    hapusBuah(f);
+
+                }
+            );
+
+
+            cekBuahMenggantung();
+
+        },
+        250
+    );
+
+}
+
+
+/* =========================================
+   BUAH YANG TIDAK TERGANTUNG
+========================================= */
+
+function cekBuahMenggantung() {
+
+    const terhubung =
+        new Set();
+
+    const queue = [];
+
+
+    /*
+       Mulai dari buah paling atas
+    */
+
+    for (
+        let x = 0;
+        x < kolom;
+        x++
+    ) {
+
+        if (
+            grid[0][x]
+        ) {
+
+            queue.push(
+                grid[0][x]
+            );
+
+            terhubung.add(
+                grid[0][x]
+            );
+
+        }
+
+    }
+
+
+    /*
+       Cari semua yang
+       masih terhubung
+    */
+
+    while (
+        queue.length > 0
+    ) {
+
+        const f =
+            queue.shift();
+
+
+        const arah = [
+
+            [1,0],
+            [-1,0],
+            [0,1],
+            [0,-1],
+
+            [1,1],
+            [-1,-1],
+            [1,-1],
+            [-1,1]
+
+        ];
+
+
+        arah.forEach(
+            function(a) {
+
+                const nx =
+                    f.gx + a[0];
+
+                const ny =
+                    f.gy + a[1];
+
+
+                if (
+                    nx < 0 ||
+                    nx >= kolom ||
+                    ny < 0 ||
+                    ny >= baris
+                ) {
+                    return;
+                }
+
+
+                const next =
+                    grid[ny][nx];
+
+
+                if (
+                    next &&
+                    !terhubung.has(next)
+                ) {
+
+                    terhubung.add(next);
+
+                    queue.push(next);
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /*
+       Buah yang tidak terhubung
+       akan jatuh
+    */
+
+    fruits.forEach(
+        function(f) {
+
+            if (
+                !terhubung.has(f) &&
+                !f.falling
+            ) {
+
+                f.falling = true;
+
+                f.element
+                    .classList
+                    .add("drop");
+
+
+                score += 5;
+
+                updateInfo();
+
+
+                setTimeout(
+                    function() {
+
+                        hapusBuah(f);
+
+                    },
+                    700
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   HAPUS BUAH
+========================================= */
+
+function hapusBuah(f) {
+
+    if (!f) {
+        return;
+    }
+
+
+    if (
+        grid[f.gy] &&
+        grid[f.gy][f.gx] === f
+    ) {
+
+        grid[f.gy][f.gx] =
+            null;
+
+    }
+
+
+    if (
+        f.element
+    ) {
+
+        f.element.remove();
+
+    }
+
+
+    const index =
+        fruits.indexOf(f);
+
+
+    if (
+        index !== -1
+    ) {
+
+        fruits.splice(
+            index,
+            1
+        );
+
+    }
+
+}
+
+
+/* =========================================
+   HAPUS PELURU
+========================================= */
+
+function hapusPeluru() {
+
+    if (
+        bullet !== null
+    ) {
+
+        bullet.element.remove();
+
+    }
+
+    bullet = null;
+
+}
+
+
+/* =========================================
+   TUKAR AMUNISI
+========================================= */
+
+function tukarAmunisi() {
+
+    if (!gameStarted) {
+        return;
+    }
+
+
+    /*
+       Contoh:
+
+       🍎 🍊 🍇
+
+       menjadi
+
+       🍊 🍎 🍇
+    */
+
+    const temp =
+        ammo[0];
+
+
+    ammo[0] =
+        ammo[1];
+
+
+    ammo[1] =
+        temp;
+
+
+    updateAmmo();
+
+}
+
+
+/* =========================================
+   TAMPILKAN AMUNISI
+========================================= */
+
+function updateAmmo() {
+
+    for (
+        let i = 0;
+        i < 3;
+        i++
+    ) {
+
+        const box =
+            document.getElementById(
+                "ammo" + i
+            );
+
+
+        box.textContent =
+            ammo[i];
+
+
+        box.classList.remove(
+            "active"
+        );
+
+    }
+
+
+    document.getElementById(
+        "ammo0"
+    ).classList.add(
+        "active"
+    );
+
+}
+
+
+/* =========================================
+   INFO
+========================================= */
+
+function updateInfo() {
+
+    document.getElementById(
+        "score"
+    ).textContent =
+        score;
+
+
+    document.getElementById(
+        "lives"
+    ).textContent =
+        lives;
+
+
+    document.getElementById(
+        "level"
+    ).textContent =
+        level;
+
+}
+
+
+/* =========================================
+   KEYBOARD
+========================================= */
+
+document.addEventListener(
+    "keydown",
+    function(e) {
+
+        if (
+            e.code === "Space"
+        ) {
+
+            e.preventDefault();
+
+            tembak();
+
+        }
+
+
+        /*
+           Tombol X untuk tukar
+        */
+
+        if (
+            e.key.toLowerCase() === "x"
+        ) {
+
+            tukarAmunisi();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   GAME OVER
+========================================= */
+
+function gameOver() {
+
+    gameStarted = false;
+
+    hapusPeluru();
+
+
+    document.getElementById(
+        "message"
+    ).textContent =
+        "GAME OVER 🎮";
+
+
+    document.getElementById(
+        "message"
+    ).style.display =
+        "block";
+
+}
+
+</script>
+
+</body>
+</html>
